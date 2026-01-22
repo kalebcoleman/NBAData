@@ -14,3 +14,23 @@ Description: More about what it does (maybe more than one line).
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
+Depends:
+    R (>= 4.1.0)
+Imports:
+    dplyr,
+    tidyr,
+    httr,
+    httr2,
+    jsonlite,
+    janitor,
+    lubridate,
+    glue,
+    purrr,
+    tibble,
+    magrittr,
+    DBI,
+    RSQLite
+Suggests:
+    testthat,
+    withr
+RoxygenNote: 7.3.3

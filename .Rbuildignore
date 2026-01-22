@@ -2,3 +2,4 @@
 ^renv\.lock$
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^data/parsed/parsed_2023\.rds$

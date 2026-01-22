@@ -1,0 +1,2 @@
+"game_id","expected","file_path","scraped","has_boxscore","has_betting"
+401468924,TRUE,"data/raw/summary_2023_20230202_401468924.json",TRUE,FALSE,TRUE
