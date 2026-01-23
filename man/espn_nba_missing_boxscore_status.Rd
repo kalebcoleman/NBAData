@@ -21,7 +21,7 @@ espn_nba_missing_boxscore_status(
 
 \item{tables}{Optional parsed tables list from espn_nba_parse_raw_dir()}
 
-\item{tables_path}{Optional path to an RDS created by save_parsed_tables_rds()}
+\item{tables_path}{Optional path to a parsed RDS created by write_parsed_tables()}
 }
 \value{
 A tibble with missing boxscore rows and status fields

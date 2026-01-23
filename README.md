@@ -18,7 +18,7 @@ tables <- espn_nba_parse_raw_dir(2024, raw_dir = "data/raw")
 v <- validate_parsed_tables(tables, warn_only = TRUE)
 
 # 4) Write parsed tables (choose one or many)
-write_parsed_tables(tables, out_dir = "data/parsed", format = "rds")
+write_parsed_tables(tables, out_dir = "data/parsed", format = "rds", season = 2024)
 write_parsed_tables(tables, out_dir = "data/parsed", format = "csv")
 write_parsed_tables(tables, out_dir = "data/parsed", format = "sqlite")
 ```

@@ -2,15 +2,17 @@
 % Please edit documentation in R/write_parsed_tables.R
 \name{write_parsed_tables}
 \alias{write_parsed_tables}
-\title{Write parsed ESPN NBA tables to CSV and/or SQLite}
+\title{Write parsed ESPN NBA tables to RDS, CSV, and/or SQLite}
 \usage{
 write_parsed_tables(
   tables,
   out_dir = "data/parsed",
-  format = c("sqlite", "csv", "both"),
+  format = c("sqlite", "csv", "both", "rds", "all"),
   db_path = file.path(out_dir, "nba.sqlite"),
   con = NULL,
   mode = c("replace", "upsert"),
+  rds_path = NULL,
+  season = NULL,
   overwrite = TRUE,
   create_dirs = TRUE
 )
@@ -20,13 +22,17 @@ write_parsed_tables(
 
 \item{out_dir}{Output directory for CSV files and default SQLite path}
 
-\item{format}{One of "sqlite", "csv", or "both"}
+\item{format}{One of "sqlite", "csv", "rds", "both", or "all"}
 
 \item{db_path}{SQLite database path}
 
 \item{con}{Optional DBI connection}
 
 \item{mode}{One of "replace" or "upsert" for database writes}
+
+\item{rds_path}{Optional path for RDS output}
+
+\item{season}{Season used to name the RDS when rds_path is NULL}
 
 \item{overwrite}{Overwrite existing outputs when TRUE}
 
@@ -36,5 +42,5 @@ write_parsed_tables(
 Invisible list describing written outputs
 }
 \description{
-Write parsed ESPN NBA tables to CSV and/or SQLite
+Write parsed ESPN NBA tables to RDS, CSV, and/or SQLite
 }

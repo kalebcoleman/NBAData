@@ -33,6 +33,48 @@ testthat::test_that("write_parsed_tables writes CSV outputs", {
   testthat::expect_equal(nrow(utils::read.csv(csv_paths[[4]])), nrow(tables$file_index))
 })
 
+testthat::test_that("write_parsed_tables writes RDS outputs", {
+  testthat::skip_if_not_installed("withr")
+
+  out_dir <- withr::local_tempdir()
+  tables <- list(
+    games = tibble::tibble(
+      game_id = 1L,
+      season = 2023L,
+      season_type = 2L,
+      game_date = as.Date("2023-01-01")
+    ),
+    team_box = tibble::tibble(
+      game_id = 1L,
+      team_id = 10L
+    ),
+    player_box = tibble::tibble(
+      game_id = 1L,
+      athlete_id = 100L,
+      points = 12L,
+      home_away = "home"
+    ),
+    file_index = tibble::tibble(file_path = "summary_2023_20230101_1.json")
+  )
+
+  result <- write_parsed_tables(
+    tables,
+    out_dir = out_dir,
+    format = "rds",
+    season = 2023,
+    overwrite = TRUE
+  )
+
+  testthat::expect_true(file.exists(result$rds$path))
+
+  loaded <- readRDS(result$rds$path)
+  testthat::expect_true(all(c("games", "team_box", "player_box", "file_index") %in% names(loaded)))
+  testthat::expect_equal(nrow(loaded$games), nrow(tables$games))
+  testthat::expect_equal(nrow(loaded$team_box), nrow(tables$team_box))
+  testthat::expect_equal(nrow(loaded$player_box), nrow(tables$player_box))
+  testthat::expect_equal(nrow(loaded$file_index), nrow(tables$file_index))
+})
+
 testthat::test_that("write_parsed_tables writes SQLite outputs", {
   testthat::skip_if_not_installed("DBI")
   testthat::skip_if_not_installed("RSQLite")

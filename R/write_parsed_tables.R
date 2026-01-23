@@ -1,26 +1,35 @@
-#' Write parsed ESPN NBA tables to CSV and/or SQLite
+#' Write parsed ESPN NBA tables to RDS, CSV, and/or SQLite
 #'
 #' @param tables Named list from espn_nba_parse_raw_dir()
 #' @param out_dir Output directory for CSV files and default SQLite path
-#' @param format One of "sqlite", "csv", or "both"
+#' @param format One of "sqlite", "csv", "rds", "both", or "all"
 #' @param db_path SQLite database path
 #' @param con Optional DBI connection
 #' @param mode One of "replace" or "upsert" for database writes
+#' @param rds_path Optional path for RDS output
+#' @param season Season used to name the RDS when rds_path is NULL
 #' @param overwrite Overwrite existing outputs when TRUE
 #' @param create_dirs Create output directories when TRUE
 #' @return Invisible list describing written outputs
 #' @export
 write_parsed_tables <- function(tables,
                                 out_dir = "data/parsed",
-                                format = c("sqlite", "csv", "both"),
+                                format = c("sqlite", "csv", "both", "rds", "all"),
                                 db_path = file.path(out_dir, "nba.sqlite"),
                                 con = NULL,
                                 mode = c("replace", "upsert"),
+                                rds_path = NULL,
+                                season = NULL,
                                 overwrite = TRUE,
                                 create_dirs = TRUE) {
   format <- match.arg(format)
   mode <- match.arg(mode)
-  formats <- if (format == "both") c("sqlite", "csv") else format
+  formats <- switch(
+    format,
+    both = c("sqlite", "csv"),
+    all = c("sqlite", "csv", "rds"),
+    format
+  )
 
   required <- c("games", "team_box", "player_box")
   missing <- setdiff(required, names(tables))
@@ -54,6 +63,42 @@ write_parsed_tables <- function(tables,
       csv_files[[name]] <- list(path = path, n = nrow(tables_out[[name]]))
     }
     results$csv <- list(out_dir = out_dir, files = csv_files)
+  }
+
+  if ("rds" %in% formats) {
+    tables_rds <- tables
+    tables_rds$games <- .espn_nba_apply_schema(tables$games, "games")
+    tables_rds$team_box <- .espn_nba_apply_schema(tables$team_box, "team_box")
+    tables_rds$player_box <- .espn_nba_apply_schema(tables$player_box, "player_box")
+    if (!is.null(tables$file_index)) {
+      tables_rds$file_index <- tables$file_index
+    }
+
+    rds_out <- rds_path
+    if (is.null(rds_out) || !nzchar(rds_out)) {
+      rds_season <- season
+      if (is.null(rds_season) || !nzchar(as.character(rds_season))) {
+        rds_season <- NULL
+        if (!is.null(tables$games) && "season" %in% names(tables$games)) {
+          seasons <- stats::na.omit(unique(as.integer(tables$games$season)))
+          if (length(seasons) == 1) {
+            rds_season <- seasons[[1]]
+          }
+        }
+      }
+      if (is.null(rds_season) || length(rds_season) == 0) {
+        stop("rds_path or season must be provided when format includes \"rds\".", call. = FALSE)
+      }
+      rds_out <- file.path(out_dir, sprintf("parsed_%s.rds", rds_season))
+    }
+    if (isTRUE(create_dirs)) {
+      dir.create(dirname(rds_out), recursive = TRUE, showWarnings = FALSE)
+    }
+    if (file.exists(rds_out) && !isTRUE(overwrite)) {
+      stop(sprintf("RDS already exists: %s", rds_out), call. = FALSE)
+    }
+    saveRDS(tables_rds, rds_out)
+    results$rds <- list(path = rds_out, n_tables = length(tables_rds))
   }
 
   if ("sqlite" %in% formats) {

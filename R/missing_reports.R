@@ -4,7 +4,7 @@
 #' @param season_type One of "regular", "postseason", or "all"
 #' @param raw_dir Directory containing raw JSON and missing CSVs
 #' @param tables Optional parsed tables list from espn_nba_parse_raw_dir()
-#' @param tables_path Optional path to an RDS created by save_parsed_tables_rds()
+#' @param tables_path Optional path to a parsed RDS created by write_parsed_tables()
 #' @return A tibble with missing boxscore rows and status fields
 #' @export
 espn_nba_missing_boxscore_status <- function(season,

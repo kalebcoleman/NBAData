@@ -115,13 +115,15 @@ collect_parse_store <- function(season,
   }
 
   if (!isTRUE(skip_if_exists) || isTRUE(overwrite_rds) || !file.exists(rds_path)) {
-    rds_path <- save_parsed_tables_rds(
+    rds_result <- write_parsed_tables(
       tables,
+      out_dir = parsed_dir,
+      format = "rds",
+      rds_path = rds_path,
       season = season,
-      dir = dirname(parsed_dir),
-      subdir = basename(parsed_dir),
       overwrite = overwrite_rds
     )
+    rds_path <- rds_result$rds$path
     message(sprintf("Saved parsed tables to %s", rds_path))
   }
 
