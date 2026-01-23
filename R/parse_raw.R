@@ -36,6 +36,9 @@ espn_nba_games_from_raw <- function(raw_summary) {
   status_state <- if (!is.null(status_type$state)) as.character(status_type$state) else NA_character_
   status_name <- if (!is.null(status_type$name)) as.character(status_type$name) else NA_character_
   status_completed <- isTRUE(status_type$completed) || identical(status_state, "post")
+  if (status_name %in% c("STATUS_POSTPONED", "STATUS_CANCELED")) {
+    status_completed <- FALSE
+  }
 
   competitors <- competition$competitors
   if (!is.null(competitors) && is.data.frame(competitors)) {
@@ -178,7 +181,47 @@ espn_nba_player_box_from_raw <- function(raw_summary) {
       team_logo = "character",
       team_home_away = "character",
       team_score = "integer",
-      team_winner = "logical"
+      team_winner = "logical",
+      assists = "integer",
+      blocks = "integer",
+      defensive_rebounds = "integer",
+      fast_break_points = "integer",
+      field_goal_pct = "numeric",
+      field_goals_made = "integer",
+      field_goals_attempted = "integer",
+      flagrant_fouls = "integer",
+      fouls = "integer",
+      free_throw_pct = "numeric",
+      free_throws_made = "integer",
+      free_throws_attempted = "integer",
+      largest_lead = "integer",
+      offensive_rebounds = "integer",
+      points_in_paint = "integer",
+      steals = "integer",
+      team_turnovers = "integer",
+      technical_fouls = "integer",
+      three_point_field_goal_pct = "numeric",
+      three_point_field_goals_made = "integer",
+      three_point_field_goals_attempted = "integer",
+      total_rebounds = "integer",
+      total_technical_fouls = "integer",
+      total_turnovers = "integer",
+      turnover_points = "integer",
+      turnovers = "integer",
+      opponent_team_id = "integer",
+      opponent_team_uid = "character",
+      opponent_team_slug = "character",
+      opponent_team_location = "character",
+      opponent_team_name = "character",
+      opponent_team_abbreviation = "character",
+      opponent_team_display_name = "character",
+      opponent_team_short_display_name = "character",
+      opponent_team_color = "character",
+      opponent_team_alternate_color = "character",
+      opponent_team_logo = "character",
+      opponent_team_score = "integer",
+      lead_changes = "integer",
+      lead_percentage = "numeric"
     ),
     player_box = c(
       game_id = "integer",
@@ -323,7 +366,9 @@ espn_nba_player_box_from_raw <- function(raw_summary) {
 espn_nba_parse_raw_dir <- function(season, raw_dir = "data/raw", progress = TRUE) {
   season <- as.character(season)
   pattern <- sprintf("^summary_%s_.*\\.json$", season)
-  files <- list.files(raw_dir, pattern = pattern, full.names = TRUE)
+  season_dir <- file.path(raw_dir, season)
+  source_dir <- if (dir.exists(season_dir)) season_dir else raw_dir
+  files <- list.files(source_dir, pattern = pattern, full.names = TRUE)
   if (length(files) == 0) {
     return(list(
       games = .espn_nba_empty_table("games"),

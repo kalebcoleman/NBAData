@@ -1,0 +1,71 @@
+{
+  "header": {
+    "id": "401000001",
+    "season": {"year": 2024, "type": 2},
+    "competitions": [
+      {
+        "date": "2024-01-15T00:00Z",
+        "status": {"type": {"state": "post", "name": "Final", "completed": true}},
+        "competitors": [
+          {"homeAway": "home", "score": "110", "winner": true, "team": {"id": "1"}},
+          {"homeAway": "away", "score": "100", "winner": false, "team": {"id": "2"}}
+        ]
+      }
+    ]
+  },
+  "boxscore": {
+    "teams": [
+      {
+        "team": {
+          "id": "1",
+          "uid": "s:40~l:46~t:1",
+          "slug": "team1",
+          "location": "Home",
+          "name": "Team1",
+          "abbreviation": "T1",
+          "displayName": "Team1",
+          "shortDisplayName": "Team1",
+          "color": "000000",
+          "alternateColor": "111111",
+          "logo": "http://example.com/logo1.png"
+        },
+        "statistics": [
+          {"name": "fieldGoalsMade-fieldGoalsAttempted", "displayValue": "40-90"},
+          {"name": "freeThrowsMade-freeThrowsAttempted", "displayValue": "10-12"},
+          {"name": "threePointFieldGoalsMade-threePointFieldGoalsAttempted", "displayValue": "10-30"}
+        ]
+      },
+      {
+        "team": {
+          "id": "2",
+          "uid": "s:40~l:46~t:2",
+          "slug": "team2",
+          "location": "Away",
+          "name": "Team2",
+          "abbreviation": "T2",
+          "displayName": "Team2",
+          "shortDisplayName": "Team2",
+          "color": "222222",
+          "alternateColor": "333333",
+          "logo": "http://example.com/logo2.png"
+        },
+        "statistics": [
+          {"name": "fieldGoalsMade-fieldGoalsAttempted", "displayValue": "35-85"},
+          {"name": "freeThrowsMade-freeThrowsAttempted", "displayValue": "15-20"},
+          {"name": "threePointFieldGoalsMade-threePointFieldGoalsAttempted", "displayValue": "8-25"}
+        ]
+      }
+    ],
+    "players": [
+      {
+        "statistics": [
+          {
+            "athletes": [
+              {"stats": ["1", "1", "1", "1", "1", "1", "1"], "didNotPlay": false}
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

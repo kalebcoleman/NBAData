@@ -1,6 +1,7 @@
 testthat::test_that("parse_raw_dir filters by season and returns tables", {
   raw_dir <- file.path(tempdir(), paste0("nba-raw-", Sys.getpid()))
-  dir.create(raw_dir, recursive = TRUE, showWarnings = FALSE)
+  season_dir <- file.path(raw_dir, "2023")
+  dir.create(season_dir, recursive = TRUE, showWarnings = FALSE)
 
   jsonlite::write_json(
     list(header = list(
@@ -17,7 +18,7 @@ testthat::test_that("parse_raw_dir filters by season and returns tables", {
         )
       )
     )),
-    file.path(raw_dir, "summary_2023_20230409_1.json")
+    file.path(season_dir, "summary_2023_20230409_1.json")
   )
   jsonlite::write_json(
     list(header = list(id = "2", season = list(year = 2024, type = 2))),
@@ -26,6 +27,6 @@ testthat::test_that("parse_raw_dir filters by season and returns tables", {
 
   out <- espn_nba_parse_raw_dir(2023, raw_dir = raw_dir, progress = FALSE)
   testthat::expect_true(all(c("games", "team_box", "player_box", "file_index") %in% names(out)))
-  testthat::expect_true(all(out$file_index$file_path %in% list.files(raw_dir, pattern = "summary_2023_", full.names = TRUE)))
+  testthat::expect_true(all(out$file_index$file_path %in% list.files(season_dir, pattern = "summary_2023_", full.names = TRUE)))
   testthat::expect_equal(nrow(out$games), 1)
 })

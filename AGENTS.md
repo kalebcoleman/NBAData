@@ -23,17 +23,16 @@ For a given `season` and `season_type`, the pipeline can:
 - [x] Raw JSON saved one file per game.
 - [x] Scraping is idempotent (skip if file exists unless `overwrite = TRUE`).
 - [x] Robust HTTP handling (retries, backoff).
-- [x] Failed scrapes logged to file (game_id, date, status, error).
-- [x] Configurable rate limiting (`pause_sec`).
-- [x] Phase A tests (naming helpers, logging, safe summary).
+- [ ] Configurable rate limiting (`pause_sec`).
+- [x] Phase A tests (naming helpers, safe summary).
 
 ### Phase B - Inventory & Completeness (Manifest)
-- [ ] Compute expected completed games for season.
-- [ ] List scraped JSON files on disk.
-- [ ] Compare expected vs scraped (missing, duplicates, naming issues).
-- [ ] Detect data availability per game (team box, player box, betting).
-- [ ] Save manifest `manifest_<season>_<season_type>.csv`.
-- [ ] `validate_season()` fails if completeness < threshold.
+- [x] Compute expected completed games for season.
+- [x] List scraped JSON files on disk.
+- [x] Compare expected vs scraped (missing, duplicates, naming issues).
+- [x] Detect data availability per game (team box, player box, betting).
+- [x] Save manifest `manifest_<season>_<season_type>.csv`.
+- [x] `validate_season()` fails if completeness < threshold.
 
 ### Phase C - Parsing (Raw JSON -> Tidy Tables)
 - [x] Parsers accept already-loaded JSON (not file paths).
@@ -57,17 +56,17 @@ For a given `season` and `season_type`, the pipeline can:
 - [x] Validation helper returns issues + samples for manual review.
 
 ### Phase E - Storage & Reproducibility
-- [ ] Write parsed tables to database (SQLite/Postgres).
-- [ ] Add indices (game_id, team_id, athlete_id, game_date).
-- [ ] Incremental update strategy (detect new games, scrape->parse->upsert).
-- [ ] Schema version table.
-- [ ] Save parsed tables to RDS for quick reloads.
+- [x] Write parsed tables to database (SQLite).
+- [x] Add indices (game_id, team_id, athlete_id, game_date).
+- [x] Incremental update strategy (detect new games, scrape->parse->upsert).
+- [x] Schema version table.
+- [x] Save parsed tables to RDS for quick reloads.
 
 ### Phase F - Testing & Regression Protection
-- [ ] Unit tests using saved JSON fixtures.
-- [ ] Tests do not depend on live ESPN endpoints.
-- [ ] Optional integration test (skipped by default).
-- [ ] Tests cover schedule structure, parsing columns, types, season validation.
+- [x] Unit tests using saved JSON fixtures.
+- [x] Tests do not depend on live ESPN endpoints.
+- [x] Optional integration test (skipped by default).
+- [x] Tests cover parsing columns, types, season validation.
 
 ## Agent Operating Rules
 - Work incrementally: write function -> write test -> run tests.

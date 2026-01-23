@@ -19,10 +19,11 @@ make_summary_fixture <- function(with_boxscore = FALSE, with_betting = FALSE) {
 
 testthat::test_that("scraped game ids are parsed from filenames", {
   raw_dir <- file.path(tempdir(), paste0("nba-raw-", Sys.getpid()))
-  dir.create(raw_dir, recursive = TRUE, showWarnings = FALSE)
+  season_dir <- file.path(raw_dir, "2023")
+  dir.create(season_dir, recursive = TRUE, showWarnings = FALSE)
 
-  jsonlite::write_json(make_summary_fixture(), file.path(raw_dir, "summary_2023_20230409_401.json"))
-  jsonlite::write_json(make_summary_fixture(), file.path(raw_dir, "summary_2023_20230410_402.json"))
+  jsonlite::write_json(make_summary_fixture(), file.path(season_dir, "summary_2023_20230409_401.json"))
+  jsonlite::write_json(make_summary_fixture(), file.path(season_dir, "summary_2023_20230410_402.json"))
 
   ids <- espn_nba_scraped_game_ids(raw_dir = raw_dir)
   testthat::expect_true(all(c(401, 402) %in% ids))
@@ -30,15 +31,16 @@ testthat::test_that("scraped game ids are parsed from filenames", {
 
 testthat::test_that("manifest reports scraped status and flags", {
   raw_dir <- file.path(tempdir(), paste0("nba-raw-", Sys.getpid()))
-  dir.create(raw_dir, recursive = TRUE, showWarnings = FALSE)
+  season_dir <- file.path(raw_dir, "2023")
+  dir.create(season_dir, recursive = TRUE, showWarnings = FALSE)
 
   jsonlite::write_json(
     make_summary_fixture(with_boxscore = TRUE, with_betting = TRUE),
-    file.path(raw_dir, "summary_2023_20230409_401.json")
+    file.path(season_dir, "summary_2023_20230409_401.json")
   )
   jsonlite::write_json(
     make_summary_fixture(with_boxscore = FALSE, with_betting = FALSE),
-    file.path(raw_dir, "summary_2023_20230410_402.json")
+    file.path(season_dir, "summary_2023_20230410_402.json")
   )
 
   testthat::local_mocked_bindings(
@@ -65,11 +67,12 @@ testthat::test_that("manifest reports scraped status and flags", {
 
 testthat::test_that("validate_season enforces completeness thresholds", {
   raw_dir <- file.path(tempdir(), paste0("nba-raw-", Sys.getpid()))
-  dir.create(raw_dir, recursive = TRUE, showWarnings = FALSE)
+  season_dir <- file.path(raw_dir, "2023")
+  dir.create(season_dir, recursive = TRUE, showWarnings = FALSE)
 
   jsonlite::write_json(
     make_summary_fixture(with_boxscore = TRUE, with_betting = FALSE),
-    file.path(raw_dir, "summary_2023_20230409_401.json")
+    file.path(season_dir, "summary_2023_20230409_401.json")
   )
 
   testthat::local_mocked_bindings(

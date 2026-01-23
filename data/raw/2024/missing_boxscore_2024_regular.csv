@@ -1,0 +1,3 @@
+"game_id","expected","file_path","scraped","has_boxscore","has_betting"
+401585204,TRUE,"data/raw/2024/summary_2024_20240118_401585204.json",TRUE,FALSE,NA
+401585217,TRUE,"data/raw/2024/summary_2024_20240120_401585217.json",TRUE,FALSE,NA

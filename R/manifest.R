@@ -64,7 +64,7 @@ espn_nba_expected_game_ids <- function(season,
 #' @return Integer vector of scraped game ids
 #' @export
 espn_nba_scraped_game_ids <- function(raw_dir = "data/raw") {
-  files <- list.files(raw_dir, pattern = "^summary_.*\\.json$", full.names = TRUE)
+  files <- list.files(raw_dir, pattern = "^summary_.*\\.json$", full.names = TRUE, recursive = TRUE)
   ids <- .espn_nba_parse_game_id_from_filename(files)
   unique(stats::na.omit(ids))
 }
@@ -79,6 +79,8 @@ espn_nba_scraped_game_ids <- function(raw_dir = "data/raw") {
 #' @param check_boxscore TRUE to check if boxscore data exists
 #' @param check_betting TRUE to check if betting data exists
 #' @param write_csv TRUE to write manifest CSV to disk
+#' @param write_missing_boxscore TRUE to write missing boxscore CSV to disk
+#' @param write_missing_betting TRUE to write missing betting CSV to disk
 #' @return A tibble manifest of expected and scraped games
 #' @export
 espn_nba_manifest <- function(season,
@@ -88,8 +90,12 @@ espn_nba_manifest <- function(season,
                               raw_dir = "data/raw",
                               check_boxscore = TRUE,
                               check_betting = FALSE,
-                              write_csv = TRUE) {
+                              write_csv = TRUE,
+                              write_missing_boxscore = TRUE,
+                              write_missing_betting = FALSE) {
   season_type <- match.arg(season_type)
+  season_dir <- file.path(raw_dir, season)
+  source_dir <- if (dir.exists(season_dir)) season_dir else raw_dir
   expected_ids <- espn_nba_expected_game_ids(
     season = season,
     season_type = season_type,
@@ -98,7 +104,7 @@ espn_nba_manifest <- function(season,
     require_completed = TRUE
   )
 
-  files <- list.files(raw_dir, pattern = "^summary_.*\\.json$", full.names = TRUE)
+  files <- list.files(source_dir, pattern = "^summary_.*\\.json$", full.names = TRUE)
   file_ids <- .espn_nba_parse_game_id_from_filename(files)
   file_info <- tibble::tibble(
     game_id = file_ids,
@@ -152,8 +158,62 @@ espn_nba_manifest <- function(season,
   manifest$has_betting <- has_betting
 
   if (isTRUE(write_csv)) {
-    path <- file.path(raw_dir, sprintf("manifest_%s_%s.csv", season, season_type))
+    path <- file.path(source_dir, sprintf("manifest_%s_%s.csv", season, season_type))
     utils::write.csv(manifest, path, row.names = FALSE)
+  }
+
+  if (isTRUE(write_missing_boxscore) && "has_boxscore" %in% names(manifest)) {
+    missing_box <- dplyr::filter(
+      manifest,
+      scraped %in% TRUE,
+      is.na(has_boxscore) | has_boxscore %in% FALSE
+    )
+    if (nrow(missing_box) > 0) {
+      missing_box$status_name <- vapply(missing_box$file_path, function(path) {
+        raw <- tryCatch(
+          jsonlite::fromJSON(path, simplifyVector = FALSE),
+          error = function(e) NULL
+        )
+        if (is.null(raw)) {
+          return(NA_character_)
+        }
+        status_type <- raw$header$competitions$status$type
+        if (is.null(status_type)) {
+          return(NA_character_)
+        }
+        if (is.list(status_type) && length(status_type) > 0) {
+          status_type <- status_type[[1]]
+        }
+        name <- status_type$name
+        if (is.null(name) || length(name) == 0) {
+          return(NA_character_)
+        }
+        if (is.list(name)) {
+          name <- name[[1]]
+        }
+        if (length(name) == 0 || is.null(name)) {
+          return(NA_character_)
+        }
+        as.character(name[[1]])
+      }, character(1))
+      missing_box <- dplyr::filter(
+        missing_box,
+        !(status_name %in% c("STATUS_POSTPONED", "STATUS_CANCELED"))
+      )
+      missing_box$status_name <- NULL
+    }
+    path <- file.path(source_dir, sprintf("missing_boxscore_%s_%s.csv", season, season_type))
+    utils::write.csv(missing_box, path, row.names = FALSE)
+  }
+
+  if (isTRUE(check_betting) && isTRUE(write_missing_betting) && "has_betting" %in% names(manifest)) {
+    missing_betting <- dplyr::filter(
+      manifest,
+      scraped %in% TRUE,
+      is.na(has_betting) | has_betting %in% FALSE
+    )
+    path <- file.path(source_dir, sprintf("missing_betting_%s_%s.csv", season, season_type))
+    utils::write.csv(missing_betting, path, row.names = FALSE)
   }
 
   manifest
@@ -250,3 +310,13 @@ validate_season <- function(season,
 
   invisible(manifest)
 }
+
+#' Build a manifest and write missing data reports
+#'
+#' @param season Season year
+#' @param season_type One of "regular", "postseason", or "all"
+#' @param start_date Optional season start date override
+#' @param end_date Optional season end date override
+#' @param raw_dir Directory to store raw JSON
+#' @param check_boxscore TRUE to check if boxscore data exists
+#' @param check_betting TRUE to check if betting data exists

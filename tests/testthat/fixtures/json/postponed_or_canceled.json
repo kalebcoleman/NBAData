@@ -1,0 +1,20 @@
+{
+  "header": {
+    "id": "401000002",
+    "season": {"year": 2024, "type": 2},
+    "competitions": [
+      {
+        "date": "2024-01-16T00:00Z",
+        "status": {"type": {"state": "post", "name": "STATUS_POSTPONED", "completed": true}},
+        "competitors": [
+          {"homeAway": "home", "score": "0", "winner": false, "team": {"id": "3"}},
+          {"homeAway": "away", "score": "0", "winner": false, "team": {"id": "4"}}
+        ]
+      }
+    ]
+  },
+  "boxscore": {
+    "teams": [],
+    "players": []
+  }
+}

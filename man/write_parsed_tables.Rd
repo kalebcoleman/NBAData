@@ -9,6 +9,8 @@ write_parsed_tables(
   out_dir = "data/parsed",
   format = c("sqlite", "csv", "both"),
   db_path = file.path(out_dir, "nba.sqlite"),
+  con = NULL,
+  mode = c("replace", "upsert"),
   overwrite = TRUE,
   create_dirs = TRUE
 )
@@ -21,6 +23,10 @@ write_parsed_tables(
 \item{format}{One of "sqlite", "csv", or "both"}
 
 \item{db_path}{SQLite database path}
+
+\item{con}{Optional DBI connection}
+
+\item{mode}{One of "replace" or "upsert" for database writes}
 
 \item{overwrite}{Overwrite existing outputs when TRUE}
 

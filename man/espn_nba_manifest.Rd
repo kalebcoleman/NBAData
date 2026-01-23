@@ -12,7 +12,9 @@ espn_nba_manifest(
   raw_dir = "data/raw",
   check_boxscore = TRUE,
   check_betting = FALSE,
-  write_csv = TRUE
+  write_csv = TRUE,
+  write_missing_boxscore = TRUE,
+  write_missing_betting = FALSE
 )
 }
 \arguments{
@@ -31,6 +33,10 @@ espn_nba_manifest(
 \item{check_betting}{TRUE to check if betting data exists}
 
 \item{write_csv}{TRUE to write manifest CSV to disk}
+
+\item{write_missing_boxscore}{TRUE to write missing boxscore CSV to disk}
+
+\item{write_missing_betting}{TRUE to write missing betting CSV to disk}
 }
 \value{
 A tibble manifest of expected and scraped games

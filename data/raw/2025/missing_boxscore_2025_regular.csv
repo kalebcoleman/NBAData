@@ -1,0 +1,6 @@
+"game_id","expected","file_path","scraped","has_boxscore","has_betting"
+401705090,TRUE,"data/raw/2025/summary_2025_20250110_401705090.json",TRUE,FALSE,NA
+401705098,TRUE,"data/raw/2025/summary_2025_20250111_401705098.json",TRUE,FALSE,NA
+401705103,TRUE,"data/raw/2025/summary_2025_20250112_401705103.json",TRUE,FALSE,NA
+401705104,TRUE,"data/raw/2025/summary_2025_20250112_401705104.json",TRUE,FALSE,NA
+401705183,TRUE,"data/raw/2025/summary_2025_20250123_401705183.json",TRUE,FALSE,NA
