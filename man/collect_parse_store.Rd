@@ -14,6 +14,10 @@ collect_parse_store(
   skip_if_exists = TRUE,
   validate = TRUE,
   warn_only = TRUE,
+  ingest_db = FALSE,
+  db_path = "data/sql/nbadata.sqlite",
+  db_mode = NULL,
+  con = NULL,
   progress = TRUE
 )
 }
@@ -36,10 +40,18 @@ collect_parse_store(
 
 \item{warn_only}{Emit warnings instead of stopping on validation issues}
 
+\item{ingest_db}{Write parsed tables to SQLite when TRUE}
+
+\item{db_path}{SQLite database path}
+
+\item{db_mode}{One of "replace" or "upsert" for database writes}
+
+\item{con}{Optional DBI connection}
+
 \item{progress}{Show a progress bar while collecting}
 }
 \value{
-A list with collect, tables, validation, and rds_path
+A list with collect, tables, validation, rds_path, and db_ingest
 }
 \description{
 Collect raw JSON, parse, validate, and store for a season

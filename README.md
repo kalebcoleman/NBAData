@@ -1,41 +1,65 @@
 # NBAData
 
-Package structure initialized with modular endpoint and utility folders.
+End-to-end ESPN NBA data pipeline: raw JSON -> parsed tables -> RDS, SQLite, or CSV.
 
-## Parsed table workflow
+## Quickstart: raw JSON to parsed tables
 
 ```r
-tables <- espn_nba_parse_raw_dir(2023, raw_dir = "data/raw")
+# 1) Collect raw JSON for a season
+collect_raw_season(2024, raw_dir = "data/raw")
+
+# Raw files are stored in:
+# data/raw/<season>/summary_<season>_<YYYYMMDD>_<game_id>.json
+
+# 2) Parse raw JSON into tidy tables
+tables <- espn_nba_parse_raw_dir(2024, raw_dir = "data/raw")
+
+# 3) Validate shape + keys
 v <- validate_parsed_tables(tables, warn_only = TRUE)
+
+# 4) Write parsed tables (choose one or many)
+write_parsed_tables(tables, out_dir = "data/parsed", format = "rds")
+write_parsed_tables(tables, out_dir = "data/parsed", format = "csv")
 write_parsed_tables(tables, out_dir = "data/parsed", format = "sqlite")
 ```
 
-SQLite is the default source of truth for analytics; CSVs are an optional export.
-
-## Database quickstart
+## SQLite (recommended source of truth)
 
 ```r
 con <- nba_db_connect(db = "data/sql/nbadata.sqlite")
 nba_db_init(con)
 
-tables <- espn_nba_parse_raw_dir(2023, raw_dir = "data/raw")
+tables <- espn_nba_parse_raw_dir(2024, raw_dir = "data/raw")
 write_parsed_tables(tables, format = "sqlite", mode = "upsert", con = con)
+
 nba_db_disconnect(con)
 ```
 
 Schema versioning is tracked in `nbadata_meta` via `NBA_SCHEMA_VERSION` and migrations in `R/migrations.R`.
-TODO: add a `player_game_status` table for explicit DNP/absence rows.
 
-## Raw collection
+## One-call pipeline (collect -> parse -> store)
 
 ```r
-collect_raw_season(2024, raw_dir = "data/raw")
-collect_raw_season(2025, raw_dir = "data/raw")
+out_2024 <- collect_parse_store(2024, raw_dir = "data/raw")
+out_2025 <- collect_parse_store(
+  2025,
+  raw_dir = "data/raw",
+  ingest_db = TRUE,
+  db_path = "data/sql/nbadata.sqlite",
+  db_mode = "upsert",
+  validate = FALSE
+)
+```
 
-# Raw files are stored in data/raw/<season>/summary_<season>_<YYYYMMDD>_<game_id>.json
-tables <- espn_nba_parse_raw_dir(2023, raw_dir = "data/raw")
-v <- validate_parsed_tables(tables, warn_only = TRUE)
-write_parsed_tables(tables, out_dir = "data/parsed", format = "sqlite")
+## RDS -> SQLite ingest
+
+```r
+nba_db_ingest_rds(
+  2026,
+  parsed_dir = "data/parsed",
+  db_path = "data/sql/nbadata.sqlite",
+  validate = FALSE
+)
 ```
 
 ## Manifest + missing reports
@@ -49,33 +73,13 @@ This writes:
 - `manifest_<season>_<season_type>.csv`
 - `missing_boxscore_<season>_<season_type>.csv` (postponed/canceled excluded)
 
-## One-call pipeline
-
-```r
-out_2024 <- collect_parse_store(2024, raw_dir = "data/raw")
-out_2025 <- collect_parse_store(2025, raw_dir = "data/raw")
-```
-
-## Incremental DB ingest
-
-```r
-nba_db_ingest_incremental(2024:2025, raw_dir = "data/raw", db_path = "data/sql/nbadata.sqlite")
-```
-
-## RDS DB ingest
-
-```r
-nba_db_ingest_rds(2026, parsed_dir = "data/parsed", db_path = "data/sql/nbadata.sqlite")
-```
-
-## Live integration test
-
-Run with:
+## Live integration test (optional)
 
 ```sh
 NBDATA_LIVE=true Rscript -e "testthat::test_file('tests/testthat/test-integration-live.R')"
 ```
 
-```r
-espn_nba_scrape_summaries_for_season(2023, raw_dir = "data/raw", progress = TRUE)
-```
+## Notes
+
+- Parsed tables: `games`, `team_box`, `player_box`, and `betting_*`.
+- Raw JSON is the source of truth; parsed tables are the contract.

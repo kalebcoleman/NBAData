@@ -9,8 +9,12 @@
 #' @param skip_if_exists Skip steps when outputs already exist
 #' @param validate Run validate_parsed_tables() when TRUE
 #' @param warn_only Emit warnings instead of stopping on validation issues
+#' @param ingest_db Write parsed tables to SQLite when TRUE
+#' @param db_path SQLite database path
+#' @param db_mode One of "replace" or "upsert" for database writes
+#' @param con Optional DBI connection
 #' @param progress Show a progress bar while collecting
-#' @return A list with collect, tables, validation, and rds_path
+#' @return A list with collect, tables, validation, rds_path, and db_ingest
 #' @export
 collect_parse_store <- function(season,
                                 season_type = c("regular", "postseason"),
@@ -21,8 +25,26 @@ collect_parse_store <- function(season,
                                 skip_if_exists = TRUE,
                                 validate = TRUE,
                                 warn_only = TRUE,
+                                ingest_db = FALSE,
+                                db_path = "data/sql/nbadata.sqlite",
+                                db_mode = NULL,
+                                con = NULL,
                                 progress = TRUE) {
   if (length(season) > 1) {
+    if (isTRUE(ingest_db)) {
+      if (is.null(db_mode)) {
+        stop("db_mode must be provided when ingest_db = TRUE.", call. = FALSE)
+      }
+      db_mode <- match.arg(db_mode, c("replace", "upsert"))
+    }
+    created_con <- FALSE
+    db_con <- con
+    if (isTRUE(ingest_db) && is.null(db_con)) {
+      db_con <- nba_db_connect(db = db_path, drv = "sqlite")
+      created_con <- TRUE
+    }
+    on.exit(if (created_con) nba_db_disconnect(db_con), add = TRUE)
+
     results <- lapply(season, function(season_value) {
       collect_parse_store(
         season = season_value,
@@ -34,6 +56,10 @@ collect_parse_store <- function(season,
         skip_if_exists = skip_if_exists,
         validate = validate,
         warn_only = warn_only,
+        ingest_db = ingest_db,
+        db_path = db_path,
+        db_mode = db_mode,
+        con = db_con,
         progress = progress
       )
     })
@@ -41,6 +67,12 @@ collect_parse_store <- function(season,
     return(results)
   }
   season_type <- match.arg(season_type)
+  if (isTRUE(ingest_db)) {
+    if (is.null(db_mode)) {
+      stop("db_mode must be provided when ingest_db = TRUE.", call. = FALSE)
+    }
+    db_mode <- match.arg(db_mode, c("replace", "upsert"))
+  }
 
   season_dir <- file.path(raw_dir, season)
   rds_path <- file.path(parsed_dir, sprintf("parsed_%s.rds", season))
@@ -93,10 +125,29 @@ collect_parse_store <- function(season,
     message(sprintf("Saved parsed tables to %s", rds_path))
   }
 
+  db_ingest <- NULL
+  if (isTRUE(ingest_db)) {
+    created_con <- FALSE
+    db_con <- con
+    if (is.null(db_con)) {
+      db_con <- nba_db_connect(db = db_path, drv = "sqlite")
+      created_con <- TRUE
+    }
+    on.exit(if (created_con) nba_db_disconnect(db_con), add = TRUE)
+    db_ingest <- write_parsed_tables(
+      tables,
+      format = "sqlite",
+      mode = db_mode,
+      db_path = db_path,
+      con = db_con
+    )
+  }
+
   list(
     collect = collect,
     tables = tables,
     validation = validation,
-    rds_path = rds_path
+    rds_path = rds_path,
+    db_ingest = db_ingest
   )
 }
